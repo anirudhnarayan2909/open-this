@@ -1,175 +1,649 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Logic Lock 🧠</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>The Logic Grid Heist 🕵️</title>
+  <style>
+    :root{
+      --bg1:#0b1220;
+      --bg2:#050814;
+      --glass: rgba(255,255,255,.06);
+      --glass2: rgba(255,255,255,.10);
+      --border: rgba(255,255,255,.14);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+      --accent:#ff4b5c;
+      --ok:#2bd4a7;
+      --warn:#fbbf24;
+      --shadow: 0 18px 55px rgba(0,0,0,.55);
+      --radius:18px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      font-family: Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px 700px at 20% 10%, #162341 0%, var(--bg1) 40%, var(--bg2) 100%);
+    }
+    .app{
+      width:min(1100px, 94vw);
+      display:grid;
+      grid-template-columns: 1.25fr .95fr;
+      gap:14px;
+      padding:16px;
+    }
+    .panel{
+      background: var(--glass);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow:hidden;
+    }
+    .top{
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .title h1{
+      margin:0;
+      font-size:18px;
+      letter-spacing:.2px;
+    }
+    .title p{
+      margin:6px 0 0;
+      color: var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
+    .pillRow{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:flex-end;
+    }
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+    }
+    .main{
+      padding:16px;
+    }
+    .sectionTitle{
+      margin:0 0 8px;
+      font-size:14px;
+      letter-spacing:.2px;
+    }
+    .clues{
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+      padding:12px;
+      color: var(--muted);
+      font-size:13px;
+      line-height:1.45;
+    }
+    .grid{
+      margin-top:12px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: 16px;
+      overflow:hidden;
+    }
+    table{
+      width:100%;
+      border-collapse: collapse;
+      font-size:13px;
+    }
+    th, td{
+      padding:10px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      vertical-align:middle;
+    }
+    th{
+      text-align:left;
+      color: var(--muted);
+      font-size:12px;
+      letter-spacing:.25px;
+      background: rgba(255,255,255,.04);
+    }
+    tr:last-child td{ border-bottom:none; }
+    select{
+      width:100%;
+      padding:9px 10px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.25);
+      color: var(--text);
+      outline:none;
+      font-weight:700;
+    }
+    select option{ color:#111; }
+    .btnRow{
+      margin-top:12px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    button{
+      border:none;
+      cursor:pointer;
+      padding:10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.10);
+      color: var(--text);
+      font-weight:800;
+      letter-spacing:.2px;
+    }
+    button:hover{ filter: brightness(1.06); }
+    button:active{ transform: scale(.985); }
+    button.primary{
+      background: var(--accent);
+      box-shadow: 0 10px 20px rgba(255,75,92,.22);
+    }
+    button.ok{
+      background: rgba(43,212,167,.92);
+      color:#062e24;
+      box-shadow: 0 10px 20px rgba(43,212,167,.18);
+    }
+    button.ghost{
+      background: transparent;
+      border:1px solid rgba(255,255,255,.18);
+    }
 
-<style>
-body{
-  margin:0;
-  min-height:100vh;
-  background: linear-gradient(135deg,#0f172a,#020617);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-family: Arial, sans-serif;
-  color:#e5e7eb;
-}
+    .side{
+      display:flex;
+      flex-direction:column;
+      min-height: 640px;
+    }
+    .side .block{
+      padding:14px 16px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+    .side .block:last-child{ border-bottom:none; }
+    .side h3{
+      margin:0 0 8px;
+      font-size:14px;
+    }
+    .hint{
+      font-size:12px;
+      color: var(--muted);
+      line-height:1.4;
+      margin:0;
+    }
+    .output{
+      margin-top:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      max-height: 260px;
+      overflow:auto;
+      padding-right:4px;
+    }
+    .msg{
+      padding:10px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      color: var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
+    .msg.warn{ border-color: rgba(251,191,36,.35); color: rgba(255,255,255,.85); }
+    .msg.ok{ border-color: rgba(43,212,167,.35); color: rgba(255,255,255,.92); }
 
-.app{
-  width:min(420px,94vw);
-  background: rgba(255,255,255,.05);
-  border-radius:18px;
-  padding:20px;
-  box-shadow:0 20px 60px rgba(0,0,0,.6);
-}
+    textarea{
+      width:100%;
+      min-height:140px;
+      resize:vertical;
+      padding:10px 12px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.20);
+      color: var(--text);
+      outline:none;
+      font-size:12px;
+      line-height:1.4;
+    }
 
-h1{margin:0;font-size:20px;}
-h2{margin:12px 0 6px;font-size:16px;}
-p{font-size:14px;line-height:1.45;color:#cbd5f5;}
+    .popup{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.70);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      z-index:999;
+    }
+    .popupBox{
+      width:min(360px, 92vw);
+      background: rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding:18px;
+      text-align:center;
+      backdrop-filter: blur(12px);
+    }
+    .popupBox h2{ margin:0; font-size:18px; }
+    .popupBox p{ margin:8px 0 0; color: var(--muted); font-size:13px; line-height:1.35; }
+    .popupBtns{ margin-top:12px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+    .popupBtns button{ width:auto; padding:10px 16px; }
 
-select,button{
-  width:100%;
-  margin-top:10px;
-  padding:10px;
-  border-radius:12px;
-  border:none;
-  font-weight:700;
-}
-
-select{
-  background:#020617;
-  color:#e5e7eb;
-  border:1px solid #334155;
-}
-
-button{
-  cursor:pointer;
-  background:#334155;
-  color:white;
-}
-
-button.primary{background:#ef4444;}
-button.ok{background:#22c55e;color:#052e1a;}
-
-.popup{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.75);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-
-.popupBox{
-  background:rgba(255,255,255,.1);
-  backdrop-filter:blur(12px);
-  border-radius:18px;
-  padding:22px;
-  width:min(320px,90vw);
-  text-align:center;
-}
-</style>
+    @media (max-width: 920px){
+      .app{ grid-template-columns: 1fr; }
+      .side{ min-height: unset; }
+    }
+  </style>
 </head>
-
 <body>
+  <div class="app">
+    <div class="panel">
+      <div class="top">
+        <div class="title">
+          <h1>The Logic Grid Heist 🧠🕵️</h1>
+          <p>
+            Assign each suspect a unique <b>location</b>, <b>time</b>, and <b>evidence</b>.
+            Your goal: make <b>every clue true</b> at the same time.
+          </p>
+        </div>
+        <div class="pillRow">
+          <div class="pill" id="pillAssign">Assigned: 0/12</div>
+          <div class="pill" id="pillUnique">Uniqueness: ❌</div>
+          <div class="pill" id="pillClues">Clues satisfied: ?</div>
+        </div>
+      </div>
 
-<div class="app">
-  <h1>The Logic Lock 🧠</h1>
-  <p>
-    A letter went missing.<br/>
-    Three suspects. Three locations. Three times.<br/><br/>
-    Each suspect makes <b>one true</b> and <b>one false</b> statement.<br/>
-    Only ONE combination is logically possible.
-  </p>
+      <div class="main">
+        <div class="sectionTitle">Clues</div>
+        <div class="clues" id="cluesText"></div>
 
-  <h2>CLUES</h2>
-  <p>
-    🔹 Alex: “I was <b>not</b> at the Café.”<br/>
-    🔹 Alex: “The letter was taken at <b>7 PM</b>.”<br/><br/>
+        <div class="sectionTitle" style="margin-top:12px;">Your Logic Grid</div>
+        <div class="grid">
+          <table>
+            <thead>
+              <tr>
+                <th>Suspect</th>
+                <th>Location</th>
+                <th>Time</th>
+                <th>Evidence</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
 
-    🔹 Sam: “The letter was taken at the <b>Library</b>.”<br/>
-    🔹 Sam: “Alex was telling the truth.”<br/><br/>
+        <div class="btnRow">
+          <button class="ghost" id="testBtn">Test Against Clues</button>
+          <button class="primary" id="submitBtn">Submit Final Solution</button>
+          <button class="ghost" id="resetBtn">Reset</button>
+        </div>
+      </div>
+    </div>
 
-    🔹 Jamie: “I was at the <b>Park</b>.”<br/>
-    🔹 Jamie: “The letter was <b>not</b> taken at 9 PM.”
-  </p>
-
-  <h2>Your Deduction</h2>
-
-  <select id="suspect">
-    <option value="">Who took it?</option>
-    <option>Alex</option>
-    <option>Sam</option>
-    <option>Jamie</option>
-  </select>
-
-  <select id="location">
-    <option value="">Where?</option>
-    <option>Café</option>
-    <option>Library</option>
-    <option>Park</option>
-  </select>
-
-  <select id="time">
-    <option value="">When?</option>
-    <option>7 PM</option>
-    <option>8 PM</option>
-    <option>9 PM</option>
-  </select>
-
-  <button class="primary" onclick="check()">Submit Deduction</button>
-</div>
+    <div class="panel side">
+      <div class="block">
+        <h3>How to play</h3>
+        <p class="hint">
+          Fill the grid. Each suspect must have a unique location, time, and evidence.
+          Use “Test Against Clues” to see which clues your current theory breaks (without revealing the answer).
+        </p>
+      </div>
+      <div class="block">
+        <h3>Result</h3>
+        <div class="output" id="output"></div>
+      </div>
+      <div class="block">
+        <h3>Notes</h3>
+        <textarea id="notes" placeholder="Write your deductions here… e.g. “If Library=7, then …”"></textarea>
+      </div>
+    </div>
+  </div>
 
 <script>
-function check(){
-  const suspect=document.getElementById("suspect").value;
-  const location=document.getElementById("location").value;
-  const time=document.getElementById("time").value;
+(() => {
+  const suspects = ["Alex", "Sam", "Jamie", "Taylor"];
+  const locations = ["Cafe", "Library", "Park", "Rooftop"];
+  const times = ["7 PM", "8 PM", "9 PM", "10 PM"];
+  const evidence = ["Rose wax", "Ticket stub", "Ink smudge", "Keycard"];
 
-  if(!suspect||!location||!time){
-    alert("Complete all fields before submitting.");
-    return;
-  }
-
-  // Correct logical solution:
-  // Jamie took it, at the Library, at 8 PM
-  const correct = (suspect==="Jamie" && location==="Library" && time==="8 PM");
-
-  if(correct){
-    win();
-  }else{
-    alert("❌ That combination breaks at least one clue.\nThink again.");
-  }
-}
-
-function win(){
-  const p=document.createElement("div");
-  p.className="popup";
-  p.innerHTML=`
-    <div class="popupBox">
-      <h2>🧠 Case Solved</h2>
-      <p>
-        Only one configuration satisfies all constraints.<br/>
-        You connected the dots correctly.
-      </p>
-      <p style="margin-top:10px;">One final question…</p>
-      <button class="ok" id="yes">Will you be my Valentine? 💘</button>
-      <button id="no">No 😅</button>
-    </div>
-  `;
-  document.body.appendChild(p);
-
-  document.getElementById("yes").onclick=()=>{
-    p.innerHTML=`<div class="popupBox"><h2>🎉 YES! 🎉</h2><p>Best decision ever 😍</p></div>`;
+  // --- UNIQUE solution (kept hidden) ---
+  // Alex: Library, 7 PM, Ink smudge
+  // Sam: Park, 8 PM, Rose wax
+  // Jamie: Cafe, 10 PM, Ticket stub
+  // Taylor: Rooftop, 9 PM, Keycard
+  const solution = {
+    Alex:   { loc:"Library", time:"7 PM",  ev:"Ink smudge" },
+    Sam:    { loc:"Park",    time:"8 PM",  ev:"Rose wax" },
+    Jamie:  { loc:"Cafe",    time:"10 PM", ev:"Ticket stub" },
+    Taylor: { loc:"Rooftop", time:"9 PM",  ev:"Keycard" }
   };
 
-  document.getElementById("no").onclick=()=>{
-    alert("Nice try 😏 The logic only allows YES 💖");
-  };
-}
+  // --- Clues (these ensure a unique solution) ---
+  const clues = [
+    { id:"C1", text:"The person at the Library was there at 7 PM.",
+      check: (m) => {
+        const lib = findBy(m, "loc", "Library");
+        return lib && lib.time === "7 PM";
+      }
+    },
+    { id:"C2", text:"The Keycard belonged to the person on the Rooftop.",
+      check: (m) => {
+        const roof = findBy(m, "loc", "Rooftop");
+        return roof && roof.ev === "Keycard";
+      }
+    },
+    { id:"C3", text:"Jamie arrived later than everyone else.",
+      check: (m) => {
+        const j = m["Jamie"];
+        if(!j || !j.time) return false;
+        // latest means 10 PM given the options
+        return j.time === "10 PM";
+      }
+    },
+    { id:"C4", text:"Sam was at the Park.",
+      check: (m) => m["Sam"] && m["Sam"].loc === "Park"
+    },
+    { id:"C5", text:"The Ticket stub was found at the Cafe.",
+      check: (m) => {
+        const cafe = findBy(m, "loc", "Cafe");
+        return cafe && cafe.ev === "Ticket stub";
+      }
+    },
+    { id:"C6", text:"The person with Rose wax arrived exactly one hour after the Library visitor.",
+      check: (m) => {
+        const lib = findBy(m, "loc", "Library");
+        const rose = findBy(m, "ev", "Rose wax");
+        if(!lib || !rose || !lib.time || !rose.time) return false;
+        const order = {"7 PM":7, "8 PM":8, "9 PM":9, "10 PM":10};
+        return order[rose.time] === order[lib.time] + 1;
+      }
+    },
+    { id:"C7", text:"Taylor was not at the Cafe and was not there at 10 PM.",
+      check: (m) => {
+        const t = m["Taylor"];
+        if(!t || !t.loc || !t.time) return false;
+        return t.loc !== "Cafe" && t.time !== "10 PM";
+      }
+    },
+    { id:"C8", text:"Alex was not on the Rooftop.",
+      check: (m) => m["Alex"] && m["Alex"].loc !== "Rooftop"
+    },
+    { id:"C9", text:"The Rooftop meeting happened at 9 PM.",
+      check: (m) => {
+        const roof = findBy(m, "loc", "Rooftop");
+        return roof && roof.time === "9 PM";
+      }
+    },
+    { id:"C10", text:"The person at 10 PM did not have the Keycard.",
+      check: (m) => {
+        const ten = findBy(m, "time", "10 PM");
+        return ten && ten.ev !== "Keycard";
+      }
+    }
+  ];
+
+  // --- DOM ---
+  const rowsEl = document.getElementById("rows");
+  const output = document.getElementById("output");
+  const notes = document.getElementById("notes");
+  const pillAssign = document.getElementById("pillAssign");
+  const pillUnique = document.getElementById("pillUnique");
+  const pillClues = document.getElementById("pillClues");
+  const cluesText = document.getElementById("cluesText");
+
+  // Render clue list
+  cluesText.innerHTML = clues.map(c => `• <b>${c.id}</b>: ${c.text}`).join("<br/>");
+
+  // Build row UI
+  const selects = {}; // suspect -> {locSel,timeSel,evSel}
+  suspects.forEach(s => {
+    const tr = document.createElement("tr");
+
+    const tdName = document.createElement("td");
+    tdName.innerHTML = `<b>${s}</b>`;
+    tr.appendChild(tdName);
+
+    const tdLoc = document.createElement("td");
+    const locSel = makeSelect(["", ...locations], "Choose…");
+    tdLoc.appendChild(locSel);
+    tr.appendChild(tdLoc);
+
+    const tdTime = document.createElement("td");
+    const timeSel = makeSelect(["", ...times], "Choose…");
+    tdTime.appendChild(timeSel);
+    tr.appendChild(tdTime);
+
+    const tdEv = document.createElement("td");
+    const evSel = makeSelect(["", ...evidence], "Choose…");
+    tdEv.appendChild(evSel);
+    tr.appendChild(tdEv);
+
+    rowsEl.appendChild(tr);
+    selects[s] = { locSel, timeSel, evSel };
+
+    locSel.addEventListener("change", updateStatus);
+    timeSel.addEventListener("change", updateStatus);
+    evSel.addEventListener("change", updateStatus);
+  });
+
+  function makeSelect(opts, placeholder){
+    const sel = document.createElement("select");
+    opts.forEach((v, i) => {
+      const o = document.createElement("option");
+      o.value = v;
+      o.textContent = v === "" ? placeholder : v;
+      sel.appendChild(o);
+    });
+    return sel;
+  }
+
+  function currentMapping(){
+    const m = {};
+    suspects.forEach(s => {
+      m[s] = {
+        loc: selects[s].locSel.value || "",
+        time: selects[s].timeSel.value || "",
+        ev: selects[s].evSel.value || ""
+      };
+    });
+    return m;
+  }
+
+  function findBy(m, key, value){
+    for(const s of suspects){
+      if(m[s] && m[s][key] === value) return { suspect:s, ...m[s] };
+    }
+    return null;
+  }
+
+  function allAssigned(m){
+    let count = 0;
+    for(const s of suspects){
+      if(m[s].loc) count++;
+      if(m[s].time) count++;
+      if(m[s].ev) count++;
+    }
+    return count; // out of 12
+  }
+
+  function uniquenessOK(m){
+    const locs = new Set(), timesSet = new Set(), evs = new Set();
+    for(const s of suspects){
+      if(!m[s].loc || !m[s].time || !m[s].ev) return false;
+      if(locs.has(m[s].loc)) return false;
+      if(timesSet.has(m[s].time)) return false;
+      if(evs.has(m[s].ev)) return false;
+      locs.add(m[s].loc);
+      timesSet.add(m[s].time);
+      evs.add(m[s].ev);
+    }
+    return true;
+  }
+
+  function violatedClues(m){
+    const bad = [];
+    for(const c of clues){
+      try{
+        if(!c.check(m)) bad.push(c);
+      }catch(_e){
+        bad.push(c);
+      }
+    }
+    return bad;
+  }
+
+  function updateStatus(){
+    const m = currentMapping();
+    const assigned = allAssigned(m);
+    pillAssign.textContent = `Assigned: ${assigned}/12`;
+
+    const uniq = uniquenessOK(m);
+    pillUnique.textContent = `Uniqueness: ${uniq ? "✅" : "❌"}`;
+
+    // Show clue status only when enough info exists to evaluate fairly
+    // (We still can evaluate, but partial info tends to show many false.)
+    const filled = assigned >= 8;
+    if(!filled){
+      pillClues.textContent = "Clues satisfied: ?";
+    } else {
+      const bad = violatedClues(m).length;
+      pillClues.textContent = `Clues satisfied: ${clues.length - bad}/${clues.length}`;
+    }
+  }
+
+  function clearOutput(){
+    output.innerHTML = "";
+  }
+  function pushMsg(text, type){
+    const d = document.createElement("div");
+    d.className = "msg" + (type ? " " + type : "");
+    d.innerHTML = text;
+    output.prepend(d);
+  }
+
+  document.getElementById("testBtn").addEventListener("click", () => {
+    clearOutput();
+    const m = currentMapping();
+
+    const assigned = allAssigned(m);
+    if(assigned < 8){
+      pushMsg("Add more assignments first. With too many blanks, every clue looks broken and it’s not useful.", "warn");
+      return;
+    }
+
+    if(!uniquenessOK(m)){
+      pushMsg("Your grid violates uniqueness (duplicate location/time/evidence) OR some rows are incomplete. Fix that first.", "warn");
+    }
+
+    const bad = violatedClues(m);
+    if(bad.length === 0){
+      pushMsg("✅ Your theory currently satisfies ALL clues. If all categories are unique, submit the final solution!", "ok");
+    } else {
+      pushMsg(`You’re close, but <b>${bad.length}</b> clue(s) are violated:`, "warn");
+      bad.forEach(c => pushMsg(`<b>${c.id}</b>: ${c.text}`, ""));
+    }
+  });
+
+  document.getElementById("submitBtn").addEventListener("click", () => {
+    clearOutput();
+    const m = currentMapping();
+
+    if(allAssigned(m) < 12){
+      pushMsg("Finish the entire grid (all suspects must have location + time + evidence).", "warn");
+      return;
+    }
+    if(!uniquenessOK(m)){
+      pushMsg("Your answer must have unique locations, times, and evidence for each suspect (no repeats).", "warn");
+      return;
+    }
+
+    const bad = violatedClues(m);
+    if(bad.length > 0){
+      pushMsg(`Not solved yet — you violate <b>${bad.length}</b> clue(s). Hit “Test Against Clues” to see which ones.`, "warn");
+      return;
+    }
+
+    // Final check vs solution (ensures it’s the intended unique outcome)
+    let exact = true;
+    for(const s of suspects){
+      if(m[s].loc !== solution[s].loc) exact = false;
+      if(m[s].time !== solution[s].time) exact = false;
+      if(m[s].ev !== solution[s].ev) exact = false;
+    }
+    if(!exact){
+      // This should not happen given the clue set, but keep it safe.
+      pushMsg("Your theory satisfies the clue checks but doesn’t match the intended unique solution. Reset and try again.", "warn");
+      return;
+    }
+
+    showValentinePopup();
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    suspects.forEach(s => {
+      selects[s].locSel.value = "";
+      selects[s].timeSel.value = "";
+      selects[s].evSel.value = "";
+    });
+    notes.value = "";
+    clearOutput();
+    updateStatus();
+    pushMsg("Reset done. New attempt!", "ok");
+  });
+
+  function showValentinePopup(){
+    const pop = document.createElement("div");
+    pop.className = "popup";
+    pop.innerHTML = `
+      <div class="popupBox">
+        <h2>🧠 Case Solved</h2>
+        <p>You connected the dots and satisfied every constraint.</p>
+        <p style="margin-top:10px; font-size:14px; color: rgba(255,255,255,.88);">
+          Will you be my Valentine? 💘
+        </p>
+        <div class="popupBtns">
+          <button class="ok" id="yesBtn">YES 💖</button>
+          <button class="ghost" id="noBtn">No 😅</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(pop);
+
+    pop.querySelector("#yesBtn").onclick = () => {
+      pop.innerHTML = `
+        <div class="popupBox">
+          <h2>🎉 YAY 🎉</h2>
+          <p style="margin-top:10px; font-size:14px; color: rgba(255,255,255,.90);">
+            Best decision ever 😍<br/>Happy Valentine’s 💘
+          </p>
+        </div>
+      `;
+    };
+
+    pop.querySelector("#noBtn").onclick = () => {
+      alert("Nice try 😏 The only logically consistent answer is YES 💖");
+    };
+  }
+
+  // initial
+  updateStatus();
+  pushMsg("Tip: Start with the strongest anchor clues (Library=7 PM, Rooftop=9 PM). Then propagate.", "ok");
+})();
 </script>
-
 </body>
 </html>
