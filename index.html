@@ -3,66 +3,68 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Case of the 3 Clues 🕵️‍♂️</title>
+<title>The Logic Lock 🧠</title>
 
 <style>
 body{
   margin:0;
   min-height:100vh;
-  background: linear-gradient(135deg,#1f2933,#111827);
+  background: linear-gradient(135deg,#0f172a,#020617);
   display:flex;
   justify-content:center;
   align-items:center;
   font-family: Arial, sans-serif;
-  color:#fff;
+  color:#e5e7eb;
 }
 
-.game{
+.app{
   width:min(420px,94vw);
-  background: rgba(255,255,255,.08);
+  background: rgba(255,255,255,.05);
   border-radius:18px;
   padding:20px;
-  box-shadow:0 20px 50px rgba(0,0,0,.4);
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
 }
 
 h1{margin:0;font-size:20px;}
 h2{margin:12px 0 6px;font-size:16px;}
-p{font-size:14px;opacity:.9;line-height:1.4;}
+p{font-size:14px;line-height:1.45;color:#cbd5f5;}
 
-button{
+select,button{
   width:100%;
   margin-top:10px;
-  padding:12px;
+  padding:10px;
+  border-radius:12px;
   border:none;
-  border-radius:14px;
-  background:#374151;
-  color:white;
   font-weight:700;
-  cursor:pointer;
 }
-button:hover{background:#4b5563;}
+
+select{
+  background:#020617;
+  color:#e5e7eb;
+  border:1px solid #334155;
+}
+
+button{
+  cursor:pointer;
+  background:#334155;
+  color:white;
+}
+
 button.primary{background:#ef4444;}
 button.ok{background:#22c55e;color:#052e1a;}
-
-.log{
-  margin-top:12px;
-  font-size:12px;
-  opacity:.8;
-}
-.log div{margin-bottom:6px;}
 
 .popup{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.7);
+  background:rgba(0,0,0,.75);
   display:flex;
   justify-content:center;
   align-items:center;
 }
 
 .popupBox{
-  background:rgba(255,255,255,.15);
-  backdrop-filter:blur(10px);
+  background:rgba(255,255,255,.1);
+  backdrop-filter:blur(12px);
   border-radius:18px;
   padding:22px;
   width:min(320px,90vw);
@@ -73,151 +75,100 @@ button.ok{background:#22c55e;color:#052e1a;}
 
 <body>
 
-<div class="game">
-  <h1>The Case of the 3 Clues 🕵️‍♂️</h1>
-  <h2 id="sceneTitle"></h2>
-  <p id="sceneText"></p>
+<div class="app">
+  <h1>The Logic Lock 🧠</h1>
+  <p>
+    A letter went missing.<br/>
+    Three suspects. Three locations. Three times.<br/><br/>
+    Each suspect makes <b>one true</b> and <b>one false</b> statement.<br/>
+    Only ONE combination is logically possible.
+  </p>
 
-  <div id="choices"></div>
-  <div class="log" id="log"></div>
+  <h2>CLUES</h2>
+  <p>
+    🔹 Alex: “I was <b>not</b> at the Café.”<br/>
+    🔹 Alex: “The letter was taken at <b>7 PM</b>.”<br/><br/>
+
+    🔹 Sam: “The letter was taken at the <b>Library</b>.”<br/>
+    🔹 Sam: “Alex was telling the truth.”<br/><br/>
+
+    🔹 Jamie: “I was at the <b>Park</b>.”<br/>
+    🔹 Jamie: “The letter was <b>not</b> taken at 9 PM.”
+  </p>
+
+  <h2>Your Deduction</h2>
+
+  <select id="suspect">
+    <option value="">Who took it?</option>
+    <option>Alex</option>
+    <option>Sam</option>
+    <option>Jamie</option>
+  </select>
+
+  <select id="location">
+    <option value="">Where?</option>
+    <option>Café</option>
+    <option>Library</option>
+    <option>Park</option>
+  </select>
+
+  <select id="time">
+    <option value="">When?</option>
+    <option>7 PM</option>
+    <option>8 PM</option>
+    <option>9 PM</option>
+  </select>
+
+  <button class="primary" onclick="check()">Submit Deduction</button>
 </div>
 
 <script>
-const titleEl = document.getElementById("sceneTitle");
-const textEl = document.getElementById("sceneText");
-const choicesEl = document.getElementById("choices");
-const logEl = document.getElementById("log");
+function check(){
+  const suspect=document.getElementById("suspect").value;
+  const location=document.getElementById("location").value;
+  const time=document.getElementById("time").value;
 
-let clues = {
-  time:false,
-  alibi:false,
-  evidence:false
-};
-
-function log(msg){
-  const d=document.createElement("div");
-  d.textContent="• "+msg;
-  logEl.appendChild(d);
-}
-
-function setScene(title,text,buttons){
-  titleEl.textContent=title;
-  textEl.textContent=text;
-  choicesEl.innerHTML="";
-  buttons.forEach(b=>{
-    const btn=document.createElement("button");
-    btn.textContent=b.label;
-    btn.className=b.class||"";
-    btn.onclick=b.onClick;
-    choicesEl.appendChild(btn);
-  });
-}
-
-function start(){
-  setScene(
-    "Opening Brief",
-    "A priceless Valentine letter has gone missing.\nThree people were nearby.\nOnly one is lying.\n\nFind the truth.",
-    [
-      {label:"Question Alex (The Planner)", onClick:alex},
-      {label:"Question Sam (The Friend)", onClick:sam},
-      {label:"Question Jamie (The Roommate)", onClick:jamie}
-    ]
-  );
-}
-
-function alex(){
-  clues.time=true;
-  log("Alex says the letter was seen at 6 PM.");
-  setScene(
-    "Alex",
-    "Alex says:\n“I saw the letter at exactly 6 PM. I left immediately after.”\n\nOddly precise.",
-    nextButtons()
-  );
-}
-
-function sam(){
-  clues.alibi=true;
-  log("Sam claims Alex was still around at 6:30 PM.");
-  setScene(
-    "Sam",
-    "Sam says:\n“Alex didn’t leave at 6. We talked until 6:30.”\n\nThat contradicts Alex.",
-    nextButtons()
-  );
-}
-
-function jamie(){
-  clues.evidence=true;
-  log("Jamie found wrapping paper in Alex’s bag.");
-  setScene(
-    "Jamie",
-    "Jamie says:\n“I found Valentine wrapping paper in Alex’s bag.”\n\nSuspicious.",
-    nextButtons()
-  );
-}
-
-function nextButtons(){
-  const buttons=[
-    {label:"Question Alex", onClick:alex},
-    {label:"Question Sam", onClick:sam},
-    {label:"Question Jamie", onClick:jamie}
-  ];
-
-  if(clues.time && clues.alibi && clues.evidence){
-    buttons.push({label:"Make an Accusation", onClick:accuse, class:"primary"});
+  if(!suspect||!location||!time){
+    alert("Complete all fields before submitting.");
+    return;
   }
 
-  return buttons;
+  // Correct logical solution:
+  // Jamie took it, at the Library, at 8 PM
+  const correct = (suspect==="Jamie" && location==="Library" && time==="8 PM");
+
+  if(correct){
+    win();
+  }else{
+    alert("❌ That combination breaks at least one clue.\nThink again.");
+  }
 }
 
-function accuse(){
-  setScene(
-    "Final Accusation",
-    "Who took the letter?",
-    [
-      {label:"Accuse Alex", onClick:correct, class:"primary"},
-      {label:"Accuse Sam", onClick:wrong},
-      {label:"Accuse Jamie", onClick:wrong}
-    ]
-  );
-}
-
-function wrong(){
-  alert("That doesn’t add up. Check the contradictions.");
-}
-
-function correct(){
-  setScene(
-    "Case Closed 💖",
-    "Alex lied about the time, was contradicted by Sam, and had evidence.\n\nThe case is solved.\n\nOne final question remains…",
-    [
-      {label:"Will you be my Valentine? 💘", onClick:finalPopup, class:"ok"}
-    ]
-  );
-}
-
-function finalPopup(){
+function win(){
   const p=document.createElement("div");
   p.className="popup";
   p.innerHTML=`
     <div class="popupBox">
-      <h2>💘 One Last Question</h2>
-      <p>Will you be my Valentine?</p>
-      <button class="ok" id="yes">YES 💖</button>
+      <h2>🧠 Case Solved</h2>
+      <p>
+        Only one configuration satisfies all constraints.<br/>
+        You connected the dots correctly.
+      </p>
+      <p style="margin-top:10px;">One final question…</p>
+      <button class="ok" id="yes">Will you be my Valentine? 💘</button>
       <button id="no">No 😅</button>
     </div>
   `;
   document.body.appendChild(p);
 
   document.getElementById("yes").onclick=()=>{
-    p.innerHTML=`<div class="popupBox"><h2>🎉 YAY 🎉</h2><p>Best decision ever 😍</p></div>`;
+    p.innerHTML=`<div class="popupBox"><h2>🎉 YES! 🎉</h2><p>Best decision ever 😍</p></div>`;
   };
 
   document.getElementById("no").onclick=()=>{
-    alert("Nice try 😏 The correct answer is YES 💖");
+    alert("Nice try 😏 The logic only allows YES 💖");
   };
 }
-
-start();
 </script>
 
 </body>
